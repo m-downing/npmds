@@ -236,8 +236,9 @@ export default function Sidebar({
       }
     }
     
-    // Collapse sidebar when a tab is clicked
+    // Collapse sidebar and close app switcher when a tab is clicked
     handleExpandChange(false);
+    setIsAppSwitcherOpen(false);
     
     // Navigate to the specified path
     if (tabPath && onNavigate) {
@@ -248,9 +249,17 @@ export default function Sidebar({
     }
   };
 
-  const handleAppSwitcherClick = () => {
-    handleExpandChange(true);
-    setIsAppSwitcherOpen(!isAppSwitcherOpen);
+  const handleAppSwitcherClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    if (!isExpanded) {
+      // If sidebar is collapsed, expand it and open app switcher
+      handleExpandChange(true);
+      setIsAppSwitcherOpen(true);
+    } else {
+      // If sidebar is already expanded, just toggle app switcher
+      setIsAppSwitcherOpen(!isAppSwitcherOpen);
+    }
   };
 
   const handleExpandClick = (event: React.MouseEvent) => {
@@ -378,7 +387,7 @@ export default function Sidebar({
                   width={20}
                   height={20}
                   className="opacity-50 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
-                  onClick={handleAppSwitcherClick}
+                  onClick={(e: React.MouseEvent) => handleAppSwitcherClick(e)}
                 />
               </Tooltip>
             </div>
