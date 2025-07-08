@@ -1,0 +1,194 @@
+/*  src/app/globals.css  */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  Font Strategy for Windows Virtual Desktop:
+  - All text uses Bahnschrift (Windows 10+ system font, most similar to Roboto)
+  - Bahnschrift is a neo-grotesque typeface with clean, geometric letterforms
+  - Fallbacks: Tahoma → Arial → sans-serif for older Windows systems
+  - Available weights: Light (300), Regular (400), SemiBold (600), Bold (700)
+  - Font families are defined in src/design-system/foundations/tokens/typography.js
+  - Accessed via Tailwind classes: font-heading, font-body (both use Bahnschrift)
+*/
+
+/* Reset margins and padding */
+html, body {
+  margin: 0;
+  padding: 0;
+  color: var(--foreground);
+  height: 100%;
+  width: 100%;
+}
+
+/* Global page scrollbar styling - matches table scrollbars */
+/* CSS custom properties for theme-aware scrollbars */
+:root {
+  --scrollbar-width: 6px;
+  --scrollbar-border-radius: 3px;
+  /* Light mode colors (default) */
+  --scrollbar-track: #f5f5f5; /* neutral-100 */
+  --scrollbar-thumb: #e5e5e5; /* neutral-200 */
+  --scrollbar-thumb-hover: #d4d4d4; /* neutral-300 */
+}
+
+.dark {
+  /* Dark mode colors - updated to use neutral tones */
+  --scrollbar-track: #171717; /* neutral-900 */
+  --scrollbar-thumb: #404040; /* neutral-700 */
+  --scrollbar-thumb-hover: #525252; /* neutral-600 */
+}
+
+/* Firefox scrollbar styling */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Webkit scrollbar styling (Chrome, Safari, Edge) */
+html::-webkit-scrollbar {
+  width: var(--scrollbar-width) !important;
+}
+
+html::-webkit-scrollbar-track {
+  background: var(--scrollbar-track) !important;
+  border-radius: var(--scrollbar-border-radius);
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb) !important;
+  border-radius: var(--scrollbar-border-radius);
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover) !important;
+}
+
+html::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track) !important;
+}
+
+/* Also apply to body for consistency */
+body::-webkit-scrollbar {
+  width: var(--scrollbar-width) !important;
+}
+
+body::-webkit-scrollbar-track {
+  background: var(--scrollbar-track) !important;
+  border-radius: var(--scrollbar-border-radius);
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb) !important;
+  border-radius: var(--scrollbar-border-radius);
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover) !important;
+}
+
+body::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track) !important;
+}
+
+/* Commented out old data-table scrollbar rules that may interfere with new design system */
+/*
+.data-table-scroll-container::-webkit-scrollbar {
+  width: 0px;
+  height: 8px;
+}
+
+.data-table-scroll-container::-webkit-scrollbar-thumb:horizontal {
+  background: #888;
+  border-radius: 4px;
+}
+
+.data-table-scroll-container::-webkit-scrollbar-track:horizontal {
+  background: #f1f1f1;
+}
+*/
+
+/* ===== SMOOTH THEME TRANSITIONS ===== */
+
+/* Custom properties for theme transition control */
+:root {
+  --theme-transition-duration: 0.3s;
+  --theme-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-transition-properties: background-color, color, border-color, fill, stroke;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-transition-duration: 0.05s;
+  }
+}
+
+/* Global theme transition for all elements */
+*,
+*::before,
+*::after {
+  transition: var(--theme-transition-properties) var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Enhanced transitions for specific elements that benefit from longer duration */
+.theme-transition-enhanced,
+.theme-transition-enhanced *,
+.theme-transition-enhanced *::before,
+.theme-transition-enhanced *::after {
+  transition-duration: calc(var(--theme-transition-duration) * 1.5) !important;
+}
+
+/* Immediate transition override for when you need instant changes */
+.theme-transition-immediate,
+.theme-transition-immediate *,
+.theme-transition-immediate *::before,
+.theme-transition-immediate *::after {
+  transition-duration: 0s !important;
+}
+
+/* Smooth transition for SVG elements specifically */
+svg,
+svg * {
+  transition: fill var(--theme-transition-duration) var(--theme-transition-timing),
+              stroke var(--theme-transition-duration) var(--theme-transition-timing),
+              opacity var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Ensure scrollbars transition smoothly too */
+::-webkit-scrollbar,
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-corner {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Special handling for elements that might flicker during transition */
+.theme-transition-stable {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: background-color, color, border-color;
+}
+
+/* Utility class for temporarily disabling transitions */
+.no-transitions,
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after {
+  transition: none !important;
+}
+
+/* Prevent sidebar color flash on dark mode refresh */
+.dark .sidebar-container {
+  background-color: rgb(38 38 38) !important; /* neutral-800 */
+}
+
+/* System preference fallback */
+@media (prefers-color-scheme: dark) {
+  .sidebar-container {
+    background-color: rgb(38 38 38) !important; /* neutral-800 */
+  }
+}
+

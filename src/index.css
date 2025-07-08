@@ -1,0 +1,7 @@
+/* Import Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import design system styles */
+@import '@company/core-ui/styles'; 
