@@ -1,10 +1,27 @@
-const { colors, badgeColors } = require('./dist/foundations/tokens/colors.js');
-const { typography } = require('./dist/foundations/tokens/typography.js');
-const { spacing } = require('./dist/foundations/tokens/spacing.js');
-const { borderRadius } = require('./dist/foundations/tokens/borderRadius.js');
-const { shadows } = require('./dist/foundations/tokens/shadows.js');
+const fs = require('fs');
+const path = require('path');
 
+// Check if dist folder exists (for when the package is installed as a dependency)
+const distExists = fs.existsSync(path.join(__dirname, 'dist'));
 
+// Import from dist if it exists, otherwise import from src
+let colors, badgeColors, typography, spacing, borderRadius, shadows;
+
+if (distExists) {
+  // Production - import from dist
+  ({ colors, badgeColors } = require('./dist/foundations/tokens/colors.js'));
+  ({ typography } = require('./dist/foundations/tokens/typography.js'));
+  ({ spacing } = require('./dist/foundations/tokens/spacing.js'));
+  ({ borderRadius } = require('./dist/foundations/tokens/borderRadius.js'));
+  ({ shadows } = require('./dist/foundations/tokens/shadows.js'));
+} else {
+  // Development - import from src
+  ({ colors, badgeColors } = require('./src/foundations/tokens/colors.js'));
+  ({ typography } = require('./src/foundations/tokens/typography.js'));
+  ({ spacing } = require('./src/foundations/tokens/spacing.js'));
+  ({ borderRadius } = require('./src/foundations/tokens/borderRadius.js'));
+  ({ shadows } = require('./src/foundations/tokens/shadows.js'));
+}
 
 module.exports = {
   content: [

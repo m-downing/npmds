@@ -253,7 +253,7 @@ export const sidebarConfig: SidebarConfig = {
 ```typescript
 'use client'
 
-import { AppLayout } from '@company/core-ui'
+import { AppLayout, AIChatBox, type Message } from '@company/core-ui'
 import { usePathname, useRouter } from 'next/navigation'
 import { sidebarConfig } from '../config/sidebar.config' // Use relative import
 import { useState } from 'react'
@@ -266,6 +266,44 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false)
+  
+  // AI Chat state
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      type: 'ai',
+      content: 'Hello! How can I help you today?',
+      timestamp: new Date()
+    }
+  ])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+
+  const handleSendMessage = async (message: string) => {
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: message,
+      timestamp: new Date()
+    }
+    
+    setMessages(prev => [...prev, userMessage])
+    setIsLoading(true)
+
+    // TODO: Replace with your AI API call
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'ai',
+        content: `I received: "${message}". This is a demo response. Connect me to your AI service!`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, aiResponse])
+      setIsLoading(false)
+    }, 1000)
+  }
 
   const sidebarProps = {
     isExpanded: isSidebarExpanded,
@@ -280,7 +318,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
       console.log('Notifications clicked')
     },
     onAIAssistantClick: () => {
-      console.log('AI Assistant clicked')
+      setIsAIAssistantOpen(true)
     }
   }
 
@@ -296,15 +334,31 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   }
 
   return (
-    <AppLayout
-      sidebarProps={sidebarProps}
-      accountDrawerProps={accountDrawerProps}
-      showAccountDrawer={true}
-      showInfoBanner={true}
-      showCriticalBanner={false}
-    >
-      {children}
-    </AppLayout>
+    <>
+      <AppLayout
+        sidebarProps={sidebarProps}
+        accountDrawerProps={accountDrawerProps}
+        showAccountDrawer={true}
+        showInfoBanner={true}
+        showCriticalBanner={false}
+      >
+        {children}
+      </AppLayout>
+      
+      {/* AI Assistant Chat */}
+      <AIChatBox
+        isOpen={isAIAssistantOpen}
+        onClose={() => setIsAIAssistantOpen(false)}
+        onMinimize={() => setIsMinimized(!isMinimized)}
+        onSendMessage={handleSendMessage}
+        messages={messages}
+        isLoading={isLoading}
+        isMinimized={isMinimized}
+        title="AI Assistant"
+        placeholder="Ask me anything..."
+        position="bottom-left"
+      />
+    </>
   )
 }
 ```

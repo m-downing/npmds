@@ -245,7 +245,7 @@ Create `src/components/Layout.tsx` with React Router v5 hooks:
 
 ```typescript
 import React, { useState, useEffect } from 'react';
-import { AppLayout } from '@company/core-ui';
+import { AppLayout, AIChatBox, type Message } from '@company/core-ui';
 import { sidebarConfig } from '../config/sidebar.config';
 import { useLocation, useHistory } from 'react-router-dom'; // v5 imports
 
@@ -260,6 +260,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [activeTab, setActiveTab] = useState('');
   const [loadingTab, setLoadingTab] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false); // Add for AI Chat
+
+  // AI Chat state
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      type: 'ai',
+      content: 'Hello! How can I help you today?',
+      timestamp: new Date()
+    }
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   // Initialize active tab based on current path
   useEffect(() => {
@@ -291,8 +304,32 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const handleAIAssistantClick = () => {
     console.log('AI Assistant clicked');
-    // Implement your AI assistant logic here
-    // Example: Open AI chat modal or sidebar panel
+    setIsAIAssistantOpen(true); // Open AI assistant
+  };
+
+  const handleSendMessage = async (message: string) => {
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: message,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    // TODO: Replace with your AI API call
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'ai',
+        content: `I received: "${message}". This is a demo response. Connect me to your AI service!`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, aiResponse]);
+      setIsLoading(false);
+    }, 1000);
   };
 
   const sidebarProps = {
@@ -335,22 +372,38 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <AppLayout
-      sidebarProps={sidebarProps}
-      accountDrawerProps={accountDrawerProps}
-      showAccountDrawer={true}
-      showInfoBanner={true}
-      showCriticalBanner={false}
-      onThemeInit={() => {
-        // Initialize theme from localStorage or system preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
-        }
-      }}
-    >
-      {children}
-    </AppLayout>
+    <>
+      <AppLayout
+        sidebarProps={sidebarProps}
+        accountDrawerProps={accountDrawerProps}
+        showAccountDrawer={true}
+        showInfoBanner={true}
+        showCriticalBanner={false}
+        onThemeInit={() => {
+          // Initialize theme from localStorage or system preference
+          const savedTheme = localStorage.getItem('theme');
+          if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          }
+        }}
+      >
+        {children}
+      </AppLayout>
+
+      {/* AI Assistant Chat */}
+      <AIChatBox
+        isOpen={isAIAssistantOpen}
+        onClose={() => setIsAIAssistantOpen(false)}
+        onMinimize={() => setIsMinimized(!isMinimized)}
+        onSendMessage={handleSendMessage}
+        messages={messages}
+        isLoading={isLoading}
+        isMinimized={isMinimized}
+        title="AI Assistant"
+        placeholder="Ask me anything..."
+        position="bottom-left"
+      />
+    </>
   );
 };
 ```
@@ -696,12 +749,18 @@ import {
   CheckboxFilter,
   ClearAllFilters,
   
+  // Modals Components
+  AIChatBox,
+  
   // Data Display
   TableView,
   ListView,
   
   // Controls
-  TableToggle
+  TableToggle,
+  
+  // Types
+  type Message
 } from '@company/core-ui';
 ```
 
@@ -810,6 +869,213 @@ const MemoizedComponent = memo(({ data }) => {
 4. **Dark mode not working**
    - Ensure theme initialization runs before React renders
    - Check that `dark` class is added to `<html>` element
+
+## Implementing AI Assistant
+
+The design system includes an `AIChatBox` component that provides a ready-to-use AI chat interface. Here's how to implement it:
+
+### Option 1: Integrated in Layout (Recommended)
+
+The Layout component example above already includes the AI Assistant integration. When you click the AI Assistant button in the sidebar, it will open the chat interface.
+
+### Option 2: Standalone Component
+
+If you prefer to manage the AI Assistant separately, create a dedicated component:
+
+```typescript
+// src/components/AIAssistant.tsx
+import React, { useState } from 'react';
+import { AIChatBox, type Message } from '@company/core-ui';
+
+interface AIAssistantProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      type: 'ai',
+      content: 'Hello! I\'m your AI assistant. How can I help you today?',
+      timestamp: new Date()
+    }
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+
+  const handleSendMessage = async (message: string) => {
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: message,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    // TODO: Replace with your actual AI API call
+    try {
+      // Example API call:
+      // const response = await fetch('/api/ai/chat', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ message })
+      // });
+      // const data = await response.json();
+      
+      // Simulated response for demo
+      setTimeout(() => {
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'ai',
+          content: `I received: "${message}". Connect me to your AI service for real responses!`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiResponse]);
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error('AI chat error:', error);
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <AIChatBox
+      isOpen={isOpen}
+      onClose={onClose}
+      onMinimize={() => setIsMinimized(!isMinimized)}
+      onSendMessage={handleSendMessage}
+      messages={messages}
+      isLoading={isLoading}
+      isMinimized={isMinimized}
+      title="AI Assistant"
+      subtitle="Powered by your AI service"
+      placeholder="Type your message..."
+      position="bottom-left"
+      width="w-[600px]"
+      height="h-[500px]"
+    />
+  );
+};
+```
+
+Then use it in your app:
+
+```typescript
+// In your main component or layout
+const [isAIOpen, setIsAIOpen] = useState(false);
+
+// In your JSX
+<AIAssistant 
+  isOpen={isAIOpen}
+  onClose={() => setIsAIOpen(false)}
+/>
+```
+
+### AIChatBox Props
+
+The `AIChatBox` component accepts these props:
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isOpen` | `boolean` | - | Controls visibility of the chat |
+| `onClose` | `() => void` | - | Called when close button is clicked |
+| `onMinimize` | `() => void` | - | Called when minimize button is clicked |
+| `onSendMessage` | `(message: string) => void` | - | Called when user sends a message |
+| `messages` | `Message[]` | `[]` | Array of chat messages |
+| `isLoading` | `boolean` | `false` | Shows loading indicator |
+| `isMinimized` | `boolean` | `false` | Minimized state |
+| `title` | `string` | `"IRIS"` | Chat window title |
+| `subtitle` | `string` | - | Optional subtitle |
+| `placeholder` | `string` | `"Type your message..."` | Input placeholder |
+| `position` | `'bottom-left' \| 'bottom-right' \| 'center'` | `'bottom-left'` | Window position |
+| `width` | `string` | `'w-[600px]'` | Tailwind width class |
+| `height` | `string` | `'h-[420px]'` | Tailwind height class |
+
+### Message Type
+
+```typescript
+interface Message {
+  id: string;
+  type: 'user' | 'ai';
+  content: string;
+  timestamp: Date;
+}
+```
+
+### Connecting to Your AI Service
+
+To connect the AI Assistant to your actual AI service:
+
+1. Replace the `setTimeout` demo code with your API call
+2. Handle errors appropriately
+3. Consider adding features like:
+   - Message history persistence
+   - Typing indicators
+   - File uploads
+   - Quick actions/suggestions
+   - Context awareness
+
+Example with a real API:
+
+```typescript
+const handleSendMessage = async (message: string) => {
+  // Add user message
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    type: 'user',
+    content: message,
+    timestamp: new Date()
+  };
+  
+  setMessages(prev => [...prev, userMessage]);
+  setIsLoading(true);
+
+  try {
+    const response = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}` // If needed
+      },
+      body: JSON.stringify({ 
+        message,
+        context: messages.slice(-10), // Last 10 messages for context
+        userId: currentUser.id
+      })
+    });
+
+    if (!response.ok) throw new Error('AI service error');
+
+    const data = await response.json();
+    
+    const aiResponse: Message = {
+      id: data.id || (Date.now() + 1).toString(),
+      type: 'ai',
+      content: data.content,
+      timestamp: new Date(data.timestamp || Date.now())
+    };
+    
+    setMessages(prev => [...prev, aiResponse]);
+  } catch (error) {
+    console.error('AI chat error:', error);
+    // Show error message to user
+    const errorMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      type: 'ai',
+      content: 'Sorry, I encountered an error. Please try again.',
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, errorMessage]);
+  } finally {
+    setIsLoading(false);
+  }
+};
+```
 
 ## Next Steps
 
