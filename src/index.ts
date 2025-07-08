@@ -10,6 +10,9 @@ export * from './components';
 // Layout - Mixed SSR/Client components
 export * from './layout';
 
+// Modals - Client-side components
+export * from './modals';
+
 // Tabular Data - Client-side components
 export * from './tabularData';
 

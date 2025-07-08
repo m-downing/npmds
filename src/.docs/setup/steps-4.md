@@ -31,11 +31,28 @@ npm install @company/core-ui
 
 ```bash
 npm install @heroicons/react@^2.0.18 clsx@^2.0.0
+
+# Also install PostCSS module for Next.js 15 compatibility
+npm install -D @tailwindcss/postcss postcss-nested
 ```
 
-## Step 2: Configure Tailwind CSS
+## Step 2: Configure PostCSS and Tailwind CSS
 
-### 2.1 Install Tailwind CSS (if not already installed)
+### 2.1 Update postcss.config.js (for Next.js 15)
+
+Make sure your PostCSS config uses CommonJS format:
+
+```javascript
+// postcss.config.js
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+### 2.2 Install Tailwind CSS (if not already installed)
 
 ```bash
 # IMPORTANT: Use Tailwind CSS v3.x - v4 is not yet supported
@@ -53,20 +70,19 @@ npm uninstall tailwindcss
 npm install -D tailwindcss@^3.4.1
 ```
 
-### 2.2 Update tailwind.config.ts
+### 2.3 Update tailwind.config.ts
 
 ```typescript
 import type { Config } from 'tailwindcss'
-import coreUIPreset from '@company/core-ui/tailwind.preset'
 
 const config: Config = {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     './node_modules/@company/core-ui/dist/**/*.{js,cjs}'
   ],
-  presets: [coreUIPreset],
+  presets: [require('@company/core-ui/tailwind.preset')], // Use require() for CommonJS module
   darkMode: 'class',
   theme: {
     extend: {
@@ -78,6 +94,8 @@ const config: Config = {
 
 export default config
 ```
+
+**Note**: The preset must be imported using `require()` because it's exported as a CommonJS module.
 
 ## Step 3: Update Global CSS
 
@@ -236,8 +254,9 @@ export const sidebarConfig: SidebarConfig = {
 'use client'
 
 import { AppLayout } from '@company/core-ui'
-import { usePathname } from 'next/navigation'
-import { sidebarConfig } from '@/app/config/sidebar.config'
+import { usePathname, useRouter } from 'next/navigation'
+import { sidebarConfig } from '../config/sidebar.config' // Use relative import
+import { useState } from 'react'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
@@ -245,20 +264,56 @@ interface LayoutWrapperProps {
 
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname()
+  const router = useRouter()
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+
+  const sidebarProps = {
+    isExpanded: isSidebarExpanded,
+    onExpandedChange: setIsSidebarExpanded,
+    config: sidebarConfig,
+    currentPath: pathname,
+    notificationCount: 3,
+    onNavigate: (path: string) => {
+      router.push(path)
+    },
+    onNotificationClick: () => {
+      console.log('Notifications clicked')
+    },
+    onAIAssistantClick: () => {
+      console.log('AI Assistant clicked')
+    }
+  }
+
+  const accountDrawerProps = {
+    userName: "John Doe",
+    userEmail: "john.doe@company.com",
+    onAccountClick: () => {
+      console.log('Account clicked')
+    },
+    onSignOut: () => {
+      console.log('Sign out clicked')
+    }
+  }
 
   return (
     <AppLayout
-      sidebarConfig={sidebarConfig}
-      currentPath={pathname}
-      userName="John Doe"
-      userEmail="john.doe@company.com"
-      notificationCount={3}
+      sidebarProps={sidebarProps}
+      accountDrawerProps={accountDrawerProps}
+      showAccountDrawer={true}
+      showInfoBanner={true}
+      showCriticalBanner={false}
     >
       {children}
     </AppLayout>
   )
 }
 ```
+
+**Important Notes**:
+- Uses relative imports to avoid path alias issues
+- All sidebar-related props go inside a `sidebarProps` object
+- Includes `onNavigate` handler for navigation to work
+- Manages sidebar expanded state locally
 
 ## Step 7: Update Root Layout
 
@@ -268,7 +323,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import LayoutWrapper from '@/app/components/LayoutWrapper'
+import LayoutWrapper from './components/LayoutWrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -348,6 +403,8 @@ export default function HomePage() {
 ### 8.2 Create app/analytics/page.tsx
 
 ```typescript
+'use client' // Required because TableView uses hooks
+
 import { Card, TableView, PageContainer } from '@company/core-ui'
 
 const sampleData = [
@@ -448,7 +505,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 ### 10.3 Update app/layout.tsx
 
 ```typescript
-import { ThemeProvider } from '@/app/providers/ThemeProvider'
+import { ThemeProvider } from './providers/ThemeProvider'
 
 export default function RootLayout({
   children,
@@ -487,7 +544,16 @@ npm install -D tailwindcss@^3.4.1
 - PostCSS configuration errors
 - Tailwind config parsing errors
 
-### Issue 2: Tailwind Classes Not Applied
+### Issue 2: PostCSS Module Error
+
+**Problem**: `Error: Cannot find module '@tailwindcss/postcss'`
+
+**Solution**: Install the missing PostCSS modules:
+```bash
+npm install -D @tailwindcss/postcss postcss-nested
+```
+
+### Issue 3: Tailwind Classes Not Applied
 
 **Solution**: Ensure the design system's dist folder is included in your Tailwind content array:
 ```javascript
@@ -497,7 +563,7 @@ content: [
 ]
 ```
 
-### Issue 3: TypeScript Errors with Imports
+### Issue 4: TypeScript Errors with Imports
 
 **Solution**: Make sure TypeScript can find the types:
 ```json
@@ -510,19 +576,60 @@ content: [
 }
 ```
 
-### Issue 4: Dark Mode Not Working
+### Issue 5: Dark Mode Not Working
 
 **Solution**: Ensure you have:
 1. `darkMode: 'class'` in tailwind.config.ts
 2. ThemeProvider wrapping your app
 3. `suppressHydrationWarning` on the html element
 
-### Issue 5: Icons Not Loading
+### Issue 6: Icons Not Loading
 
 **Solution**: Verify that:
 1. Public folder structure is correct
 2. SVG files are properly formatted
 3. Icon paths in sidebar config match file locations
+
+### Issue 7: Import Path Issues
+
+**Problem**: Errors like `Module not found: Can't resolve '@/app/components/LayoutWrapper'`
+
+**Solution**: Use relative imports instead of path aliases, or ensure your tsconfig.json has the correct path mappings:
+```typescript
+// Instead of:
+import LayoutWrapper from '@/app/components/LayoutWrapper'
+
+// Use:
+import LayoutWrapper from './components/LayoutWrapper'
+```
+
+### Issue 8: Navigation Not Working
+
+**Problem**: Clicking sidebar links shows loading spinner but doesn't navigate
+
+**Solution**: Make sure your LayoutWrapper includes the `onNavigate` handler:
+```typescript
+const sidebarProps = {
+  // ... other props
+  onNavigate: (path: string) => {
+    router.push(path)
+  }
+}
+```
+
+### Issue 9: Prerender Error with Interactive Components
+
+**Problem**: `TypeError: (0 , n.useRef) is not a function` during build
+
+**Solution**: Add `'use client'` directive to pages that use interactive components:
+```typescript
+'use client' // Add this at the top
+
+import { TableView } from '@company/core-ui'
+// ... rest of your component
+```
+
+This happens because components like `TableView`, `ListView`, and other interactive components use React hooks that aren't available during server-side prerendering.
 
 ## Next Steps
 
@@ -541,6 +648,7 @@ The design system provides these components (all support TypeScript and are App 
 - **Feedback**: Badge, Spinner, Tooltip, NotificationBadge, CriticalBanner, InfoBanner
 - **Filters**: DropdownSelect, DropdownMultiSelect, DateRangeFilter, CheckboxFilter, ClearAllFilters
 - **Controls**: TableToggle
+- **Modals**: AIChatBox
 - **Tabular Data**: TableView, ListView
 
 All components include proper TypeScript types and work seamlessly with Next.js App Router's server and client components.
@@ -610,3 +718,94 @@ export function ProductList({ products }) {
 ```
 
 This separation allows you to leverage the benefits of both server and client components while using the design system.
+
+## Implementing AI Assistant
+
+The design system includes an `AIChatBox` component. To implement it:
+
+### Create app/components/AIAssistant.tsx
+
+```typescript
+'use client'
+
+import { useState } from 'react'
+import { AIChatBox, type Message } from '@company/core-ui'
+
+interface AIAssistantProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export default function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      type: 'ai',
+      content: 'Hello! How can I help you today?',
+      timestamp: new Date()
+    }
+  ])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+
+  const handleSendMessage = async (message: string) => {
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: message,
+      timestamp: new Date()
+    }
+    
+    setMessages(prev => [...prev, userMessage])
+    setIsLoading(true)
+
+    // TODO: Replace with your AI API call
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'ai',
+        content: `I received: "${message}". Connect me to your AI service!`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, aiResponse])
+      setIsLoading(false)
+    }, 1000)
+  }
+
+  return (
+    <AIChatBox
+      isOpen={isOpen}
+      onClose={onClose}
+      onMinimize={() => setIsMinimized(!isMinimized)}
+      onSendMessage={handleSendMessage}
+      messages={messages}
+      isLoading={isLoading}
+      isMinimized={isMinimized}
+      title="AI Assistant"
+      placeholder="Ask me anything..."
+    />
+  )
+}
+```
+
+### Update LayoutWrapper to use it
+
+```typescript
+// Add to your imports
+import AIAssistant from './AIAssistant'
+
+// Add state in LayoutWrapper
+const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false)
+
+// Update onAIAssistantClick in sidebarProps
+onAIAssistantClick: () => {
+  setIsAIAssistantOpen(true)
+}
+
+// Add after </AppLayout>
+<AIAssistant 
+  isOpen={isAIAssistantOpen}
+  onClose={() => setIsAIAssistantOpen(false)}
+/>
+```
