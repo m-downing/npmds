@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import clsx from 'clsx';
 import { RocketLaunchIcon } from '@heroicons/react/24/outline';

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { ListViewProps } from './types';
 import { openTableInNewTab, paginateData } from './utils';

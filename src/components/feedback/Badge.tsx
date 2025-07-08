@@ -1,5 +1,7 @@
 // src/app/components/design-system/Badge.tsx
 
+'use client';
+
 import React from 'react';
 import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 

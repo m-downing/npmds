@@ -1,3 +1,5 @@
+'use client';
+
 import React, { InputHTMLAttributes, forwardRef, useState, useEffect } from 'react';
 
 /**

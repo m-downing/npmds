@@ -1,5 +1,5 @@
 import { ChartBarSquareIcon, HomeIcon, CogIcon, DocumentTextIcon, UserGroupIcon, ChartPieIcon, FolderIcon } from '@heroicons/react/24/outline';
-import { SparklesIcon, BeakerIcon, BoltIcon, FireIcon, GlobeAltIcon, RocketLaunchIcon } from '@heroicons/react/24/solid';
+import { SparklesIcon, BeakerIcon, BoltIcon, FireIcon, GlobeAltIcon } from '@heroicons/react/24/solid';
 import type { SidebarConfig } from '../types';
 
 export const defaultSidebarConfig: SidebarConfig = {

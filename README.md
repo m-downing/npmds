@@ -4,43 +4,59 @@
 
 This design system provides a comprehensive set of design tokens, components, and utilities for building consistent user interfaces. It integrates seamlessly with Tailwind CSS for styling.
 
+## Features
+
+- **Complete Component Library**: Buttons, forms, tables, filters, navigation, and more
+- **Design Tokens**: Consistent colors, typography, spacing, and shadows
+- **Dark Mode Support**: Built-in dark mode with theme-aware components
+- **TypeScript**: Full TypeScript support with comprehensive type definitions
+- **Tailwind CSS**: Built on Tailwind CSS v3.4.1 with custom preset (v4 not yet supported)
+- **Multi-Version Support**: Compatible with React 16.13.1+ through React 19.0.0
+- **Next.js App Router Ready**: All components include 'use client' directives for full Next.js App Router compatibility
+- **Framework Agnostic**: Works with React, Next.js, and other React-based frameworks
+
 ## Framework Support
 
-This design system is **framework-agnostic** and supports both React Router and Next.js App Router through navigation providers.
+This design system is **framework-agnostic** and supports:
+- Traditional React apps (16.13.1+)
+- React Router v5 and v6
+- Next.js with Pages Router
+- Next.js with App Router (full support with 'use client' directives)
 
 ### Installation
 
 ```bash
-npm install @company/ipsc-design-system
+# From npm registry (once published)
+npm install @company/core-ui
+
+# From local package during development
+npm install /path/to/company-core-ui-2.0.0.tgz
 ```
+
+**Required Peer Dependencies:**
+```bash
+npm install react@^16.13.1 react-dom@^16.13.1 @heroicons/react@^2.0.18
+npm install -D tailwindcss@^3.4.1 postcss autoprefixer
+```
+
+> ⚠️ **Important**: Tailwind CSS v4 is not yet supported. Use v3.4.1 or compatible v3.x version.
+
+### Compatibility Matrix
+
+| React Version | React Router | Next.js    | Support Level |
+|--------------|--------------|------------|---------------|
+| 16.13.1      | v5.3.0      | -          | ✅ Full       |
+| 16.14.0      | v5.1.2      | -          | ✅ Full       |
+| 18.x         | v6.x        | 13.x-14.x  | ✅ Full       |
+| 19.0.0       | -           | 15.x       | ✅ Full       |
 
 ### Setup by Framework
 
-#### Next.js Apps
-```tsx
-import { NextJSNavigationProvider } from '@company/ipsc-design-system';
-
-export default function RootLayout({ children }) {
-  return (
-    <NextJSNavigationProvider>
-      {children}
-    </NextJSNavigationProvider>
-  );
-}
-```
-
-#### React Router Apps
-```tsx
-import { ReactRouterV5NavigationProvider } from '@company/ipsc-design-system';
-
-function App() {
-  return (
-    <ReactRouterV5NavigationProvider>
-      {children}
-    </ReactRouterV5NavigationProvider>
-  );
-}
-```
+See the integration guides in `src/.docs/setup/` for detailed instructions:
+- `steps.md` - React 18.x + React Router v6 + TypeScript
+- `steps-2.md` - React 16.13.1 + React Router v5
+- `steps-3.md` - React 16.14.0 + React Router v5
+- `steps-4.md` - Next.js 15.2.2 + App Router + TypeScript
 
 ## Structure
 
@@ -90,19 +106,16 @@ src/design-system/
 
 ### Importing Components
 ```typescript
-// Individual components
-import { Button } from '@/design-system/components/primitives';
-import { LineChart } from '@/design-system/charts';
-import { TableView } from '@/design-system/tabularData';
-
-// Or from main export
-import { Button, LineChart, TableView } from '@/design-system';
+// Import from the package
+import { Button, Card, Badge, TableView } from '@company/core-ui';
+import { colors, getTypography } from '@company/core-ui';
+import type { BadgeVariant, SidebarConfig } from '@company/core-ui';
 ```
 
 ### Using Design Tokens in Components
 ```typescript
 // Import tokens for direct usage
-import { colors, getTypography } from '@/design-system/foundations/tokens';
+import { colors, getTypography, spacing, shadows } from '@company/core-ui';
 
 // Or use through Tailwind classes
 className="bg-primary-600 text-neutral-50"
@@ -166,8 +179,8 @@ The Badge component supports 28 predefined variants for supply chain status and 
 
 #### Basic Usage
 ```typescript
-import Badge from '@/design-system/components/feedback/Badge';
-import type { BadgeVariant, BadgeIcon } from '@/design-system';
+import { Badge } from '@company/core-ui';
+import type { BadgeVariant, BadgeIcon } from '@company/core-ui';
 
 // Basic badge
 <Badge variant="forecast">Forecast</Badge>
@@ -214,8 +227,10 @@ import type {
   Colors, 
   BadgeVariant, 
   FontSizeKey,
-  SpinnerSize 
-} from '@/design-system';
+  SpinnerSize,
+  SidebarConfig,
+  TableViewProps
+} from '@company/core-ui';
 ```
 
 ## Tailwind Integration

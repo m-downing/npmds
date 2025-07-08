@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeftIcon, PlusIcon, ClockIcon, XMarkIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { UserIcon } from '@heroicons/react/24/solid';

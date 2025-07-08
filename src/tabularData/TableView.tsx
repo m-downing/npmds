@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useRef } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/outline';
 import { TableViewProps, SortConfig, FilterConfig } from './types';
